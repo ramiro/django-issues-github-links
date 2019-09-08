@@ -26,7 +26,7 @@ var selectors = [
   "span.js-issue-title"
 ];
 
-function gh_remover(match, prefix, trac_ticket, offset, haystack) {
+function pr_remover(match, prefix, trac_ticket, offset, haystack) {
   return `${prefix}#${trac_ticket}`;
 }
 
@@ -38,17 +38,14 @@ for (var sel of selectors) {
   var elements = document.querySelectorAll(sel);
   elements.forEach(function(e) {
     var innerHtml = e.innerHTML;
-    innerHtml = innerHtml.replace(github_pr_link_re, gh_remover);
+    innerHtml = innerHtml.replace(github_pr_link_re, pr_remover);
     if (sentinel_re.exec(innerHtml)) {
       var preamble = innerHtml.slice(0, sentinel_re.lastIndex);
       var body = innerHtml.slice(sentinel_re.lastIndex);
-      //while (ticket_re.exec(body) !== null) {
       while (ticket_re.test(body)) {
         body = body.replace(ticket_re, replacer);
       }
-      var result = preamble + body;
       e.innerHTML = preamble + body;
     }
-    //e.innerHTML = innerHtml.replace(github_pr_link_re, replacer);
   });
 }
