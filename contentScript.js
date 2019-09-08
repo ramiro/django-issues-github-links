@@ -1,5 +1,5 @@
 //
-// Some commits to test this snippet:
+// Some links to test this snippet:
 //
 // https://github.com/django/django/commit/3f8ee58ccc5c55e62625ad797ddde05778fe1bec
 // https://github.com/django/django/commit/6201141b2ccfc54874cb43158daae0efd49afa23
@@ -11,10 +11,11 @@
 // https://github.com/django/django/pull/11732
 // https://github.com/django/django/pull/11735
 
-var needle = /((?:refs\.?|fixe[ds])\s+)#(\d+)/gi;
+var sentinel_re = /((refs\.?|fixe[ds]))(?=\s+#\d+)/gi;
+var ticket_re = /(,?\s+)#(\d+)/g;
 // Example of a link we need to replace:
 // <a class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="53897017" data-permission-text="Issue title is private" data-hovercard-type="pull_request" data-hovercard-url="/django/django/pull/3871/hovercard" href="https://github.com/django/django/pull/3871" aria-label="#3871, Non digits custom user model primary key password lookup.">#3871</a>
-var github_pr_link = /((?:refs\.?|fixe[ds])\s+)(?:<a class="issue-link js-issue-link[^>]+?>)#(\d+)(?:<\/a>)/gi;
+var github_pr_link_re = /((?:refs\.?|fixe[ds])\s+)(?:<a class="issue-link js-issue-link[^>]+?>)#(\d+)(?:<\/a>)/gi;
 var selectors = [
   // for
   // https://github.com/django/django/commit/* and
@@ -25,6 +26,10 @@ var selectors = [
   "span.js-issue-title"
 ];
 
+function gh_remover(match, prefix, trac_ticket, offset, haystack) {
+  return `${prefix}#${trac_ticket}`;
+}
+
 function replacer(match, prefix, trac_ticket, offset, haystack) {
   return `${prefix}<a class=django-trac-link href=https://code.djangoproject.com/ticket/${trac_ticket}>#${trac_ticket}</a>`;
 }
@@ -32,7 +37,18 @@ function replacer(match, prefix, trac_ticket, offset, haystack) {
 for (var sel of selectors) {
   var elements = document.querySelectorAll(sel);
   elements.forEach(function(e) {
-    var innerHtml = e.innerHTML.replace(needle, replacer);
-    e.innerHTML = innerHtml.replace(github_pr_link, replacer);
+    var innerHtml = e.innerHTML;
+    innerHtml = innerHtml.replace(github_pr_link_re, gh_remover);
+    if (sentinel_re.exec(innerHtml)) {
+      var preamble = innerHtml.slice(0, sentinel_re.lastIndex);
+      var body = innerHtml.slice(sentinel_re.lastIndex);
+      //while (ticket_re.exec(body) !== null) {
+      while (ticket_re.test(body)) {
+        body = body.replace(ticket_re, replacer);
+      }
+      var result = preamble + body;
+      e.innerHTML = preamble + body;
+    }
+    //e.innerHTML = innerHtml.replace(github_pr_link_re, replacer);
   });
 }
