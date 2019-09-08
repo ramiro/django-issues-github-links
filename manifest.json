@@ -1,7 +1,7 @@
 {
   "name": "Django ticket GitHub links",
-  "version": "0.0.15",
-  "description": "Linkify Django Trac ticket numbers on Git commit messages at GitHub",
+  "version": "0.0.19",
+  "description": "Linkify Django Trac ticket numbers in Git commit messages on GitHub",
   "manifest_version": 2,
   "content_scripts": [
     {
@@ -12,6 +12,9 @@
       ],
       "js": [
         "contentScript.js"
+      ],
+      "css": [
+        "css/style.css"
       ]
     }
   ]

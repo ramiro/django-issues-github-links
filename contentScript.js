@@ -11,7 +11,10 @@
 // https://github.com/django/django/pull/11732
 // https://github.com/django/django/pull/11735
 
-var needle = /((refs\.?|fixe[ds])\s+)#(\d+)/gi;
+var needle = /((?:refs\.?|fixe[ds])\s+)#(\d+)/gi;
+// Example of a link we need to replace:
+// <a class="issue-link js-issue-link tooltipped tooltipped-ne" data-error-text="Failed to load issue title" data-id="53897017" data-permission-text="Issue title is private" data-hovercard-type="pull_request" data-hovercard-url="/django/django/pull/3871/hovercard" href="https://github.com/django/django/pull/3871" aria-label="#3871, Non digits custom user model primary key password lookup.">#3871</a>
+var github_pr_link = /((?:refs\.?|fixe[ds])\s+)(?:<a class="issue-link js-issue-link[^>]+?>)#(\d+)(?:<\/a>)/gi;
 var selectors = [
   // for
   // https://github.com/django/django/commit/* and
@@ -22,13 +25,14 @@ var selectors = [
   "span.js-issue-title"
 ];
 
-function replacer(match, prefix, p2, trac_ticket, offset, haystack) {
-  return `${prefix}<a href=https://code.djangoproject.com/ticket/${trac_ticket}>#${trac_ticket}</a>`;
+function replacer(match, prefix, trac_ticket, offset, haystack) {
+  return `${prefix}<a class=django-trac-link href=https://code.djangoproject.com/ticket/${trac_ticket}>#${trac_ticket}</a>`;
 }
 
 for (var sel of selectors) {
   var elements = document.querySelectorAll(sel);
   elements.forEach(function(e) {
-    e.innerHTML = e.innerHTML.replace(needle, replacer);
+    var innerHtml = e.innerHTML.replace(needle, replacer);
+    e.innerHTML = innerHtml.replace(github_pr_link, replacer);
   });
 }
