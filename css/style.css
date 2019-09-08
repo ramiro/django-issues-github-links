@@ -1,0 +1,6 @@
+.commit .commit-title a.django-trac-link,
+.commit-desc pre a.django-trac-link,
+.gh-header-title a.django-trac-link {
+    color: #0c4b33;
+    text-decoration: underline dotted;
+}
