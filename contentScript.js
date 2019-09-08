@@ -1,5 +1,5 @@
 //
-// Some commits to test this snippet:
+// Some links to test this snippet:
 //
 // https://github.com/django/django/commit/3f8ee58ccc5c55e62625ad797ddde05778fe1bec
 // https://github.com/django/django/commit/6201141b2ccfc54874cb43158daae0efd49afa23
@@ -11,7 +11,9 @@
 // https://github.com/django/django/pull/11732
 // https://github.com/django/django/pull/11735
 
-var needle = /((refs\.?|fixe[ds])\s+)#(\d+)/gi;
+var needle = /((refs\.?|fixe[ds])\s+)#(\d+)(?:,?\b)/gi;
+//var needle = /((refs\.?|fixe[ds])\s+)(?:#(\d+)(?:,\s+)?)+/gi;
+//var ticket = /^(?:,?\s+)#(\d+)/;
 var selectors = [
   // for
   // https://github.com/django/django/commit/* and
@@ -21,14 +23,23 @@ var selectors = [
   // for https://github.com/django/django/pull/*
   "span.js-issue-title"
 ];
+//var extra_tickets = Array();
 
 function replacer(match, prefix, p2, trac_ticket, offset, haystack) {
-  return `${prefix}<a href=https://code.djangoproject.com/ticket/${trac_ticket}>#${trac_ticket}</a>`;
+  //return `${prefix}<a href=https://code.djangoproject.com/ticket/${trac_ticket}>#${trac_ticket}</a>`;
+
+  var rv = `${prefix}<a href=https://code.djangoproject.com/ticket/${trac_ticket}>#${trac_ticket}</a>`;
+  //end_offset = offset + rv.length;
+  //if ticket.haystack.slice(end_offset) {
+  //  extra_tickets.push(ticket);
+  //}
+  return rv;
 }
 
 for (var sel of selectors) {
   var elements = document.querySelectorAll(sel);
   elements.forEach(function(e) {
+    //extra_tickets = [];
     e.innerHTML = e.innerHTML.replace(needle, replacer);
   });
 }
